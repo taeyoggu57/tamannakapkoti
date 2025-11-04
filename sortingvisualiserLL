@@ -1,0 +1,295 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>  // for sleep() (use delay() in Turbo C)
+
+// structure for node
+struct Node {
+    int data;
+    struct Node *next;
+};
+
+// create new node
+struct Node* createNode(int data) {
+    struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// insert node at end
+void insertEnd(struct Node **head, int data) {
+    struct Node *newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+    struct Node *temp = *head;
+    while (temp->next != NULL)
+        temp = temp->next;
+    temp->next = newNode;
+}
+
+// display linked list
+void displayList(struct Node *head) {
+    struct Node *temp = head;
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// =======================
+// Bubble Sort
+// =======================
+void bubbleSort(struct Node *head) {
+    struct Node *i, *j;
+    int temp;
+    if (head == NULL) return;
+
+    for (i = head; i != NULL; i = i->next) {
+        for (j = head; j->next != NULL; j = j->next) {
+            if (j->data > j->next->data) {
+                temp = j->data;
+                j->data = j->next->data;
+                j->next->data = temp;
+                printf("Step: ");
+                displayList(head);
+                sleep(1);
+            }
+        }
+    }
+}
+
+// =======================
+// Insertion Sort
+// =======================
+struct Node* insertionSort(struct Node *head) {
+    struct Node *sorted = NULL;
+    struct Node *current = head;
+
+    while (current != NULL) {
+        struct Node *next = current->next;
+        if (sorted == NULL || sorted->data >= current->data) {
+            current->next = sorted;
+            sorted = current;
+        } else {
+            struct Node *temp = sorted;
+            while (temp->next != NULL && temp->next->data < current->data)
+                temp = temp->next;
+            current->next = temp->next;
+            temp->next = current;
+        }
+        current = next;
+        printf("Step: ");
+        displayList(sorted);
+        sleep(1);
+    }
+    return sorted;
+}
+
+// =======================
+// Selection Sort
+// =======================
+void selectionSort(struct Node *head) {
+    struct Node *i, *j, *min;
+    int temp;
+    for (i = head; i != NULL; i = i->next) {
+        min = i;
+        for (j = i->next; j != NULL; j = j->next) {
+            if (j->data < min->data)
+                min = j;
+        }
+        if (min != i) {
+            temp = i->data;
+            i->data = min->data;
+            min->data = temp;
+        }
+        printf("Step: ");
+        displayList(head);
+        sleep(1);
+    }
+}
+
+// =======================
+// Merge Sort
+// =======================
+struct Node* merge(struct Node *a, struct Node *b) {
+    if (a == NULL) return b;
+    if (b == NULL) return a;
+    struct Node *result = NULL;
+    if (a->data <= b->data) {
+        result = a;
+        result->next = merge(a->next, b);
+    } else {
+        result = b;
+        result->next = merge(a, b->next);
+    }
+    return result;
+}
+
+void split(struct Node *source, struct Node **front, struct Node **back) {
+    struct Node *fast, *slow;
+    slow = source;
+    fast = source->next;
+    while (fast != NULL) {
+        fast = fast->next;
+        if (fast != NULL) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    *front = source;
+    *back = slow->next;
+    slow->next = NULL;
+}
+
+void mergeSort(struct Node **headRef) {
+    struct Node *head = *headRef;
+    struct Node *a, *b;
+
+    if (head == NULL || head->next == NULL)
+        return;
+
+    split(head, &a, &b);
+    mergeSort(&a);
+    mergeSort(&b);
+    *headRef = merge(a, b);
+
+    printf("Step: ");
+    displayList(*headRef);
+    sleep(1);
+}
+
+// =======================
+// Quick Sort
+// =======================
+struct Node* getTail(struct Node *cur) {
+    while (cur != NULL && cur->next != NULL)
+        cur = cur->next;
+    return cur;
+}
+
+struct Node* partition(struct Node *head, struct Node *end,
+                       struct Node **newHead, struct Node **newEnd) {
+    struct Node *pivot = end;
+    struct Node *prev = NULL, *cur = head, *tail = pivot;
+
+    while (cur != pivot) {
+        if (cur->data < pivot->data) {
+            if ((*newHead) == NULL)
+                *newHead = cur;
+            prev = cur;
+            cur = cur->next;
+        } else {
+            if (prev)
+                prev->next = cur->next;
+            struct Node *tmp = cur->next;
+            cur->next = NULL;
+            tail->next = cur;
+            tail = cur;
+            cur = tmp;
+        }
+    }
+
+    if ((*newHead) == NULL)
+        *newHead = pivot;
+    *newEnd = tail;
+    return pivot;
+}
+
+struct Node* quickSortRecur(struct Node *head, struct Node *end) {
+    if (!head || head == end)
+        return head;
+
+    struct Node *newHead = NULL, *newEnd = NULL;
+    struct Node *pivot = partition(head, end, &newHead, &newEnd);
+
+    if (newHead != pivot) {
+        struct Node *temp = newHead;
+        while (temp->next != pivot)
+            temp = temp->next;
+        temp->next = NULL;
+        newHead = quickSortRecur(newHead, temp);
+        temp = getTail(newHead);
+        temp->next = pivot;
+    }
+
+    pivot->next = quickSortRecur(pivot->next, newEnd);
+    printf("Step: ");
+    displayList(newHead);
+    sleep(1);
+    return newHead;
+}
+
+void quickSort(struct Node **headRef) {
+    *headRef = quickSortRecur(*headRef, getTail(*headRef));
+}
+
+// =======================
+// Main Function
+// =======================
+int main() {
+    struct Node *head = NULL;
+    int choice, data;
+
+    while (1) {
+        printf("\n--- Sorting Visualization Using Linked List ---\n");
+        printf("1. Insert Element\n");
+        printf("2. Display List\n");
+        printf("3. Bubble Sort\n");
+        printf("4. Insertion Sort\n");
+        printf("5. Selection Sort\n");
+        printf("6. Merge Sort\n");
+        printf("7. Quick Sort\n");
+        printf("8. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            printf("Enter data: ");
+            scanf("%d", &data);
+            insertEnd(&head, data);
+            break;
+
+        case 2:
+            printf("Linked List: ");
+            displayList(head);
+            break;
+
+        case 3:
+            printf("Bubble Sort Visualization:\n");
+            bubbleSort(head);
+            break;
+
+        case 4:
+            printf("Insertion Sort Visualization:\n");
+            head = insertionSort(head);
+            break;
+
+        case 5:
+            printf("Selection Sort Visualization:\n");
+            selectionSort(head);
+            break;
+
+        case 6:
+            printf("Merge Sort Visualization:\n");
+            mergeSort(&head);
+            break;
+
+        case 7:
+            printf("Quick Sort Visualization:\n");
+            quickSort(&head);
+            break;
+
+        case 8:
+            printf("Exiting program...\n");
+            exit(0);
+
+        default:
+            printf("Invalid choice! Try again.\n");
+        }
+    }
+    return 0;
+}
