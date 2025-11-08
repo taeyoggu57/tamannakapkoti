@@ -1,0 +1,79 @@
+import requests
+from datetime import datetime
+
+class CurrencyConverter:
+    def __init__(self, base_currency="USD"):
+        self.api_url = f"https://api.exchangerate-api.com/v4/latest/{base_currency}"
+        self.base_currency = base_currency
+        self.rates = {}
+        self.last_updated = None
+        self.update_rates()
+
+    def update_rates(self):
+        """Fetch latest exchange rates from API"""
+        try:
+            response = requests.get(self.api_url)
+            response.raise_for_status()
+            data = response.json()
+            self.rates = data["rates"]
+            self.last_updated = datetime.fromtimestamp(data["time_last_updated"])
+            print(f"\n✅ Exchange rates updated successfully at {self.last_updated}\n")
+        except requests.RequestException as e:
+            print(f"❌ Error fetching rates: {e}")
+
+    def convert(self, amount, from_currency, to_currency):
+        """Convert amount between two currencies"""
+        from_currency = from_currency.upper()
+        to_currency = to_currency.upper()
+
+        if from_currency not in self.rates or to_currency not in self.rates:
+            raise ValueError("Currency not supported or not available.")
+
+        # Convert amount to base currency, then to target
+        base_amount = amount / self.rates[from_currency]
+        converted_amount = base_amount * self.rates[to_currency]
+        return round(converted_amount, 2)
+
+    def show_available_currencies(self):
+        """Display supported currencies"""
+        print("\n🌍 Available Currencies:\n")
+        for code in sorted(self.rates.keys()):
+            print(code, end="  ")
+        print("\n")
+
+
+def main():
+    print("💰 Welcome to the Advanced Currency Converter 💱\n")
+    converter = CurrencyConverter(base_currency="USD")
+
+    while True:
+        print("Options:")
+        print("1. Convert Currency")
+        print("2. Show Available Currencies")
+        print("3. Refresh Exchange Rates")
+        print("4. Exit")
+
+        choice = input("\nEnter your choice (1-4): ").strip()
+
+        if choice == "1":
+            try:
+                amount = float(input("Enter amount: "))
+                from_currency = input("From Currency (e.g., USD): ").strip().upper()
+                to_currency = input("To Currency (e.g., INR): ").strip().upper()
+                result = converter.convert(amount, from_currency, to_currency)
+                print(f"\n💵 {amount} {from_currency} = {result} {to_currency}\n")
+            except ValueError as ve:
+                print(f"⚠️ {ve}\n")
+        elif choice == "2":
+            converter.show_available_currencies()
+        elif choice == "3":
+            converter.update_rates()
+        elif choice == "4":
+            print("👋 Thank you for using the converter! Goodbye.")
+            break
+        else:
+            print("❌ Invalid choice. Try again.\n")
+
+
+if __name__ == "__main__":
+    main()
