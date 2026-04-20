@@ -1,0 +1,146 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// ================= SINGLY LINKED LIST =================
+struct SNode {
+    int data;
+    struct SNode* next;
+};
+
+struct SNode* sHead = NULL;
+
+void insertSingly(int val) {
+    struct SNode* newNode = (struct SNode*)malloc(sizeof(struct SNode));
+    newNode->data = val;
+    newNode->next = NULL;
+
+    if (sHead == NULL) {
+        sHead = newNode;
+    } else {
+        struct SNode* temp = sHead;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newNode;
+    }
+}
+
+void displaySingly() {
+    struct SNode* temp = sHead;
+    printf("\nSingly Linked List:\n");
+    while (temp != NULL) {
+        printf("[%d] -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// ================= DOUBLY LINKED LIST =================
+struct DNode {
+    int data;
+    struct DNode* prev;
+    struct DNode* next;
+};
+
+struct DNode* dHead = NULL;
+
+void insertDoubly(int val) {
+    struct DNode* newNode = (struct DNode*)malloc(sizeof(struct DNode));
+    newNode->data = val;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+
+    if (dHead == NULL) {
+        dHead = newNode;
+    } else {
+        struct DNode* temp = dHead;
+        while (temp->next != NULL)
+            temp = temp->next;
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+}
+
+void displayDoubly() {
+    struct DNode* temp = dHead;
+    printf("\nDoubly Linked List:\n");
+    while (temp != NULL) {
+        printf("[%d] <-> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// ================= CIRCULAR LINKED LIST =================
+struct CNode {
+    int data;
+    struct CNode* next;
+};
+
+struct CNode* cHead = NULL;
+
+void insertCircular(int val) {
+    struct CNode* newNode = (struct CNode*)malloc(sizeof(struct CNode));
+    newNode->data = val;
+
+    if (cHead == NULL) {
+        cHead = newNode;
+        newNode->next = cHead;
+    } else {
+        struct CNode* temp = cHead;
+        while (temp->next != cHead)
+            temp = temp->next;
+
+        temp->next = newNode;
+        newNode->next = cHead;
+    }
+}
+
+void displayCircular() {
+    if (cHead == NULL) return;
+
+    struct CNode* temp = cHead;
+    printf("\nCircular Linked List:\n");
+
+    do {
+        printf("[%d] -> ", temp->data);
+        temp = temp->next;
+    } while (temp != cHead);
+
+    printf("(back to head)\n");
+}
+
+// ================= MENU =================
+int main() {
+    int choice, val, type;
+
+    while (1) {
+        printf("\n===== Linked List Visualizer =====\n");
+        printf("1. Insert\n2. Display\n3. Exit\n");
+        printf("Choose option: ");
+        scanf("%d", &choice);
+
+        if (choice == 3) break;
+
+        printf("Select Type: 1-Singly 2-Doubly 3-Circular: ");
+        scanf("%d", &type);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value: ");
+                scanf("%d", &val);
+
+                if (type == 1) insertSingly(val);
+                else if (type == 2) insertDoubly(val);
+                else if (type == 3) insertCircular(val);
+                break;
+
+            case 2:
+                if (type == 1) displaySingly();
+                else if (type == 2) displayDoubly();
+                else if (type == 3) displayCircular();
+                break;
+        }
+    }
+
+    return 0;
+}
